@@ -38,13 +38,10 @@ LOG_IP_VAR=${LOG_IP_VAR:-remote_addr}
 XMLRPC_SIZE_LIMIT=${XMLRPC_SIZE_LIMIT:-2M}
 XMLRPC_AUTHBASIC_STRING=${XMLRPC_AUTHBASIC_STRING:-rTorrent XMLRPC restricted access}
 RUTORRENT_AUTHBASIC_STRING=${RUTORRENT_AUTHBASIC_STRING:-ruTorrent restricted access}
-WEBDAV_AUTHBASIC_STRING=${WEBDAV_AUTHBASIC_STRING:-WebDAV restricted access}
 XMLRPC_PORT=${XMLRPC_PORT:-8000}
 XMLRPC_HEALTH_PORT=$((XMLRPC_PORT + 1))
 RUTORRENT_PORT=${RUTORRENT_PORT:-8080}
 RUTORRENT_HEALTH_PORT=$((RUTORRENT_PORT + 1))
-WEBDAV_PORT=${WEBDAV_PORT:-9000}
-WEBDAV_HEALTH_PORT=$((WEBDAV_PORT + 1))
 
 # rTorrent
 RT_LOG_LEVEL=${RT_LOG_LEVEL:-info}
@@ -130,14 +127,6 @@ sed -e "s!@UPLOAD_MAX_SIZE@!$UPLOAD_MAX_SIZE!g" \
     -e "s!@RUTORRENT_HEALTH_PORT@!$RUTORRENT_HEALTH_PORT!g" \
     -i /etc/nginx/conf.d/rutorrent.conf
 
-# Nginx WebDAV
-echo "  ${norm}[${green}+${norm}] Setting Nginx WebDAV configuration..."
-sed -e "s!@WEBDAV_AUTHBASIC_STRING@!$WEBDAV_AUTHBASIC_STRING!g" \
-  -e "s!@WEBDAV_PORT@!$WEBDAV_PORT!g" \
-  -e "s!@WEBDAV_HEALTH_PORT@!$WEBDAV_HEALTH_PORT!g" \
-  -e "s!@DOWNLOAD_PATH@!$DOWNLOAD_PATH!g" \
-  -i /etc/nginx/conf.d/webdav.conf
-
 # Healthcheck
 echo "  ${norm}[${green}+${norm}] Setting healthcheck script..."
 cat > /usr/local/bin/healthcheck <<EOL
@@ -150,8 +139,6 @@ curl --fail -d "<?xml version='1.0'?><methodCall><methodName>system.api_version<
 # ruTorrent / PHP
 curl --fail http://127.0.0.1:${RUTORRENT_HEALTH_PORT}/ping
 
-# WebDAV
-curl --fail http://127.0.0.1:${WEBDAV_HEALTH_PORT}
 EOL
 
 # Init
@@ -182,7 +169,6 @@ mkdir -p /passwd \
 
 touch /passwd/rpc.htpasswd \
   /passwd/rutorrent.htpasswd \
-  /passwd/webdav.htpasswd \
   ${CONFIG_PATH}/rtorrent/log/rtorrent.log \
   ${RU_LOG_FILE}
 
@@ -198,11 +184,6 @@ if [ ! -s "/passwd/rutorrent.htpasswd" ]; then
   echo "  ${norm}[${yellow}+${norm}] rutorrent.htpasswd is empty, removing authentication..."
   sed -i "s!auth_basic .*!#auth_basic!g" /etc/nginx/conf.d/rutorrent.conf
   sed -i "s!auth_basic_user_file.*!#auth_basic_user_file!g" /etc/nginx/conf.d/rutorrent.conf
-fi
-if [ ! -s "/passwd/webdav.htpasswd" ]; then
-  echo "  ${norm}[${yellow}+${norm}] webdav.htpasswd is empty, removing authentication..."
-  sed -i "s!auth_basic .*!#auth_basic!g" /etc/nginx/conf.d/webdav.conf
-  sed -i "s!auth_basic_user_file.*!#auth_basic_user_file!g" /etc/nginx/conf.d/webdav.conf
 fi
 
 # rTorrent local config

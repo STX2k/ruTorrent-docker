@@ -147,7 +147,6 @@ RUN ./configure \
   --with-stream_ssl_module \
   --with-http_addition_module \
   --with-http_auth_request_module \
-  --with-http_dav_module \
   --with-http_degradation_module \
   --with-http_flv_module \
   --with-http_gunzip_module \
@@ -167,7 +166,6 @@ RUN ./configure \
   --with-http_geoip_module=dynamic \
   --with-http_image_filter_module=dynamic \
   --with-http_xslt_module=dynamic \
-  --add-dynamic-module=./nginx-dav-ext
 RUN make -j $(nproc)
 RUN make install -j $(nproc)
 RUN make DESTDIR=${DIST_PATH} install -j $(nproc)

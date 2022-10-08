@@ -1,15 +1,7 @@
-<p align="center"><a href="https://github.com/k44sh/rutorrent" target="_blank"><img width="1699" src="https://raw.githubusercontent.com/k44sh/rutorrent/main/.ruTorrent.png"></a></p>
-
-<p align="center">
-  <a href="https://hub.docker.com/r/k44sh/rutorrent/tags?page=1&ordering=last_updated"><img src="https://img.shields.io:/docker/v/k44sh/rutorrent/latest?logo=docker" alt="Latest Version"></a>
-  <a href="https://hub.docker.com/r/k44sh/rutorrent/"><img src="https://img.shields.io:/docker/image-size/k44sh/rutorrent?logo=docker" alt="Docker Size"></a>
-  <a href="https://hub.docker.com/r/k44sh/rutorrent/"><img src="https://img.shields.io:/docker/pulls/k44sh/rutorrent?logo=docker" alt="Docker Pulls"></a>
-  <a href="https://github.com/k44sh/rutorrent/actions?workflow=build"><img src="https://img.shields.io:/github/workflow/status/k44sh/rutorrent/build?logo=github" alt="Build Status"></a>
-</p>
-
 ## About
 
 [rTorrent](https://github.com/rakshasa/rtorrent) and [ruTorrent](https://github.com/Novik/ruTorrent) Docker image based on Alpine Linux.<br />
+This is a FORK of the amazing work from [k44sh](https://github.com/rakshasa/rtorrent) but without the WebDav part. 
 ___
 
 ## Features
@@ -28,53 +20,12 @@ ___
 * [mktorrent](https://github.com/Rudde/mktorrent) installed for ruTorrent create plugin
 * `WAN IP` address automatically resolved for reporting to the tracker
 * `XMLRPC` through nginx over SCGI socket (basic auth optional)
-* `WebDAV` on completed downloads (basic auth optional)
 * Ability to add a custom ruTorrent `plugin` / `theme`
 * Allow specific configuration for `data` folder
 * Allow specific configuration for `config` folder
 
-## Radarr / Sonarr Users
-
-It is recommended to use the same `data` volume for `ruTorrent` and `Radarr`/`Sonarr`, in order to have a structure similar to this :
-
-```shell
-data
-├── downloads
-└── media
-   ├── movies
-   ├── music
-   └── tv
-```
-
-:information_source: More informations here : [TRaSH Guide](https://trash-guides.info/Hardlinks/How-to-setup-for/Docker/)
-
-## Supported platforms
-
-* linux/amd64
-* linux/arm64
-* linux/arm/v7
 
 ## Usage
-
-### Docker Compose
-
-Docker compose is the recommended way to run this image. Edit the compose file with your preferences and run the following command:
-
-```shell
-mkdir $(pwd)/{config,data,passwd}
-chown ${PUID}:${PGID} $(pwd)/{config,data,passwd}
-docker-compose up -d
-docker-compose logs -f
-```
-
-### Upgrade
-
-To upgrade, pull the newer image and launch the container:
-
-```shell
-docker-compose pull
-docker-compose up -d
-```
 
 ### Command line
 
@@ -89,12 +40,11 @@ docker run -d --name rutorrent \
   -p 6881:6881/udp \
   -p 8000:8000 \
   -p 8080:8080 \
-  -p 9000:9000 \
   -p 50000:50000 \
   -v $(pwd)/config:/config \
   -v $(pwd)/data:/data \
   -v $(pwd)/passwd:/passwd \
-  k44sh/rutorrent:latest && \
+  stx2k/rutorrent-docker:latest && \
   docker logs -f rutorrent
 ```
 
@@ -123,8 +73,6 @@ docker run -d --name rutorrent \
 * `XMLRPC_SIZE_LIMIT`: Maximum body size of XMLRPC calls (default `2M`)
 * `RUTORRENT_AUTHBASIC_STRING`: Message displayed during validation of ruTorrent Basic Auth (default `ruTorrent restricted access`)
 * `RUTORRENT_PORT`: ruTorrent HTTP port (default `8080`)
-* `WEBDAV_AUTHBASIC_STRING`: Message displayed during validation of WebDAV Basic Auth (default `WebDAV restricted access`)
-* `WEBDAV_PORT`: WebDAV port on completed downloads (default `9000`)
 
 ### rTorrent
 
@@ -167,10 +115,9 @@ docker run -d --name rutorrent \
 * `6881` (or `RT_DHT_PORT`): DHT UDP port (`dht.port.set`)
 * `8000` (or `XMLRPC_PORT`): XMLRPC port through nginx over SCGI socket
 * `8080` (or `RUTORRENT_PORT`): ruTorrent HTTP port
-* `9000` (or `WEBDAV_PORT`): WebDAV port on completed downloads
 * `50000` (or `RT_INC_PORT`): Incoming connections (`network.port_range.set`)
 
-> :information_source: Port p+1 defined for `XMLRPC_PORT`, `RUTORRENT_PORT` and `WEBDAV_PORT` will also be reserved for
+> :information_source: Port p+1 defined for `XMLRPC_PORT` and `RUTORRENT_PORT` will also be reserved for
 > healthcheck. (e.g. if you define `RUTORRENT_PORT=8080`, port `8081` will be reserved)
 
 ## Notes
@@ -181,12 +128,6 @@ rTorrent 0.9.7+ has a built-in daemon mode disabling the user interface, so you 
 will route XMLRPC requests to rtorrent through port `8000`. These requests can be secured with basic authentication
 through the `/passwd/rpc.htpasswd` file in which you will need to add a username with his password. See below to
 populate this file with a user / password.
-
-### WebDAV
-
-WebDAV allows you to retrieve your completed torrent files in `/data` on port `9000`. Like XMLRPC, these
-requests can be secured with basic authentication through the `/passwd/webdav.htpasswd` file in which you will need to
-add a username with his password. See below to populate this file with a user / password.
 
 ### Populate .htpasswd files
 
@@ -201,7 +142,6 @@ Htpasswd files used:
 
 * `rpc.htpasswd`: XMLRPC through nginx
 * `rutorrent.htpasswd`: ruTorrent basic auth
-* `webdav.htpasswd`: WebDAV on completed downloads
 
 ### Override or add a ruTorrent plugin/theme
 
